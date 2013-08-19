@@ -1,0 +1,14 @@
+{
+  "name": "thready",
+  "description":"Threads for node",
+  "version":"0.0.2",
+  "homepage":"https://github.com/objectundefined/thready",
+  "repository":"git://github.com/objectundefined/thready.git",
+  "author":"Gabriel Lipson",
+  "main":"./index.js",
+  "dependencies": {
+    "async": "*",
+    "underscore": "~1.4.4",
+  },
+  "version": "0.0.1"
+}

@@ -48,11 +48,15 @@ Worker.prototype.require = function ( requirementsObj ) {
   
 };
 
-Worker.prototype.process = function ( args , cb ) {
+Worker.prototype.process = function (){
   
   var _this = this ;
   
   var child = child_process.fork( path.join( __dirname , './worker' ) ) ;
+  
+  var args = _.toArray(arguments);
+  
+  var cb = typeof _.last(args) == 'function' ? args.pop() : function(){} ;
   
   child.send({
     

@@ -13,7 +13,7 @@ process.on( 'message' , function ( m ) {
   
   if ( m.fn && m.process ) {
     
-    GLOBAL.MAIN = eval( "(" + m.fn + ")" )(m.process) ;
+    GLOBAL.MAIN = eval( "(" + m.fn + ")" ).apply(GLOBAL,m.process) ;
     
   }
   
@@ -27,6 +27,6 @@ function emit ( err , results ) {
 
 process.on('uncaughtException',function(err){
   
-  process.send( { err : err , results : null } ) ;
+  process.send( { err : err.message , results : null } ) ;
   
 })

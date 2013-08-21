@@ -7,8 +7,6 @@ var EventEmitter = require('events').EventEmitter ;
 
 var Worker = function () { this.setOpts.apply(this,arguments) };
 
-Worker.prototype.__proto__ = EventEmitter.prototype;
-
 Worker.prototype.setOpts = function(fnOrPath){
   
   var _this = this ;
@@ -36,12 +34,6 @@ Worker.prototype.setOpts = function(fnOrPath){
     throw new Error('Invalid worker function provided') ;
   
   }
-
-  if ( _.isString(_this.fn) && _this.fn.indexOf('emit') == -1 ) {
-  
-    throw( new Error( 'The passed-in function must contain an emit() statement to track completion.' ) )
-  
-  }
   
 };
 
@@ -49,7 +41,7 @@ Worker.prototype.spawn = function (){
   
   var _this = this ;
   
-  var child = _this.child = child_process.fork( path.join( __dirname , './worker' ) ) ;
+  var child = new Child(child_process.fork( path.join( __dirname , './worker' ) )) ;
   
   var args = _.toArray(arguments) ;
   
@@ -65,17 +57,33 @@ Worker.prototype.spawn = function (){
   
   child.send({ process : args }) ;
   
-  child.on('message',function(m){
+  return child ;
+  
+};
+
+function Child (child) {
+  
+  var _this = this ;
+  
+  _this.child_process = child ;
+  
+  _this.child_process.on('message',function(m){
     
     if ( m._type ) {
-      
+      console.log('here foo')
       _this.emit.apply( _this , [m._type].concat( m.args ) ) ;
       
     }
     
   });
   
-  return child ;
+}
+
+Child.prototype.__proto__ = EventEmitter.prototype;
+
+Child.prototype.send = function ( m , fd ) {
+  
+  this.child_process.send( m , fd ) ;
   
 };
 

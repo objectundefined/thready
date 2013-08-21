@@ -77,14 +77,23 @@ Worker.prototype.process = function (){
   
 };
 
-
-worker.prototype.kill = function ( sig ) {
+Worker.prototype.kill = function ( sig ) {
   
   if ( this.child ) {
     
     this.child.kill( sig ) ;
     
     delete this.child ;
+    
+  }
+  
+};
+
+Worker.prototype.send = function ( m , handle ) {
+  
+  if ( this.child ) {
+    
+    this.child.send( m , handle ) ;
     
   }
   

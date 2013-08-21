@@ -11,7 +11,7 @@ GLOBAL.worker = {
   
 };
 
-process.on( 'message' , function ( m ) {
+process.on( 'message' , function ( m , socket ) {
   
   if ( m.module ) {
     
@@ -28,6 +28,12 @@ process.on( 'message' , function ( m ) {
   if ( m.process ) {
     
     GLOBAL.worker.main.apply(GLOBAL,m.process)
+    
+  }
+  
+  if ( socket ) {
+    
+    GLOBAL.worker.socket = socket ;
     
   }
   

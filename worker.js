@@ -38,9 +38,3 @@ process.on( 'message' , function ( m , socket ) {
   }
   
 });
-
-process.on('uncaughtException',function(err){
-  
-  GLOBAL.worker.emit('complete',err.stack) ;
-  
-})

@@ -87,4 +87,11 @@ Child.prototype.send = function ( m , fd ) {
   
 };
 
+Child.prototype.kill = function ( sig ) {
+  
+  this.child_process.kill( sig ) ;
+  
+};
+
+
 exports.Worker = Worker ;

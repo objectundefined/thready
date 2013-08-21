@@ -1,32 +1,40 @@
 
+GLOBAL.worker = {
+  
+  emit : function ( _type ) {
+    
+    process.send( { _type : _type , args : Array.prototype.slice.call( arguments , 1 ) } ) ;
+  
+  },
+    
+  main : function(){ GLOBAL.worker.emit(new Error('No Worker Function Provided')) }
+  
+};
+
 process.on( 'message' , function ( m ) {
   
-  if ( typeof m.require == 'object' ) {
+  if ( m.module ) {
     
-    Object.keys( m.require ).forEach(function(k){
-      
-      GLOBAL[ k ] = require( m.require[ k ] ) ;
-      
-    });
+    GLOBAL.worker.main = require( m.module ) ;
     
   }
   
-  if ( m.fn && m.process ) {
+  if ( m.fn ) {
     
-    GLOBAL.MAIN = eval( "(" + m.fn + ")" ).apply(GLOBAL,m.process) ;
+    GLOBAL.worker.main = eval( "(" + m.fn + ")" ) ;
+    
+  }
+  
+  if ( m.process ) {
+    
+    GLOBAL.worker.main.apply(GLOBAL,m.process)
     
   }
   
 });
 
-function emit ( err , results ) {
-  
-  process.send( { err : err , results : results } ) ;
-  
-}
-
 process.on('uncaughtException',function(err){
   
-  process.send( { err : err.message , results : null } ) ;
+  GLOBAL.worker.emit('complete',err.stack) ;
   
 })

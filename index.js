@@ -3,48 +3,45 @@ var _ = require('underscore') ;
 var path = require('path') ;
 var fs = require('fs') ;
 var format = require('util').format ;
+var EventEmitter = require('events').EventEmitter ;
 
-var Worker = function ( fnOrPath ) {
+var Worker = function () { this.setOpts.apply(this,arguments) };
+
+Worker.prototype.__proto__ = EventEmitter.prototype;
+
+Worker.prototype.setOpts = function(fnOrPath){
   
   var _this = this ;
   
-  _this.requirements = {} ;
+  _this.opts = {} ;
   
   if ( _.isString( fnOrPath ) ) {
-    
+  
     if ( fs.existsSync( fnOrPath ) ) {
-      
-      _this.fn = fs.readFileSync( fnOrPath , "utf8" ) ;
-      
+    
+      _this.opts.module = fnOrPath ;
+    
     } else {
-      
+    
       throw new Error('Path to worker function does not exist.')
-      
+    
     }
-    
+  
   } else if ( _.isFunction( fnOrPath ) ) {
-    
-    _this.fn = fnOrPath.toString() ;
-    
+  
+    _this.opts.fn = fnOrPath.toString() ;
+  
   } else {
-    
+  
     throw new Error('Invalid worker function provided') ;
-    
-  }
   
-  if ( _.isString(_this.fn) && _this.fn.indexOf('emit') == -1 ) {
-    
-    throw( new Error( 'The passed-in function must contain an emit() statement to track completion.' ) )
-    
   }
-  
-};
 
-Worker.prototype.require = function ( requirementsObj ) {
+  if ( _.isString(_this.fn) && _this.fn.indexOf('emit') == -1 ) {
   
-  var _this = this ;
+    throw( new Error( 'The passed-in function must contain an emit() statement to track completion.' ) )
   
-  _.extend( _this.requirements , requirementsObj ) ;
+  }
   
 };
 
@@ -52,26 +49,44 @@ Worker.prototype.process = function (){
   
   var _this = this ;
   
-  var child = child_process.fork( path.join( __dirname , './worker' ) ) ;
+  var child = _this.child = child_process.fork( path.join( __dirname , './worker' ) ) ;
   
-  var args = _.toArray(arguments);
+  var args = _.toArray(arguments) ;
   
-  var cb = typeof _.last(args) == 'function' ? args.pop() : function(){} ;
-  
-  child.send({
+  if ( _this.opts.module ) {
     
-    require : _this.requirements ,
-    fn : _this.fn ,
-    process : args
+    child.send({ module : _this.opts.module }) ;
+    
+  } else if ( _this.opts.fn ) {
+    
+    child.send({ fn : _this.opts.fn }) ;
+    
+  }
+  
+  child.send({ process : args }) ;
+  
+  child.on('message',function(m){
+    
+    if ( m._type ) {
+      
+      _this.emit.apply( _this , [m._type].concat( m.args ) ) ;
+      
+    }
     
   });
   
-  child.once('message',function(mdata){
+};
+
+
+worker.prototype.kill = function ( sig ) {
+  
+  if ( this.child ) {
     
-    child.kill() ;
-    cb( mdata.err , mdata.results ) ;
+    this.child.kill( sig ) ;
     
-  })
+    delete this.child ;
+    
+  }
   
 };
 

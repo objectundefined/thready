@@ -70,7 +70,7 @@ function Child (child) {
   _this.child_process.on('message',function(m){
     
     if ( m._type ) {
-      console.log('here foo')
+      
       _this.emit.apply( _this , [m._type].concat( m.args ) ) ;
       
     }

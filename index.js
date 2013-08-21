@@ -45,7 +45,7 @@ Worker.prototype.setOpts = function(fnOrPath){
   
 };
 
-Worker.prototype.process = function (){
+Worker.prototype.spawn = function (){
   
   var _this = this ;
   
@@ -75,27 +75,7 @@ Worker.prototype.process = function (){
     
   });
   
-};
-
-Worker.prototype.kill = function ( sig ) {
-  
-  if ( this.child ) {
-    
-    this.child.kill( sig ) ;
-    
-    delete this.child ;
-    
-  }
-  
-};
-
-Worker.prototype.send = function ( m , handle ) {
-  
-  if ( this.child ) {
-    
-    this.child.send( m , handle ) ;
-    
-  }
+  return child ;
   
 };
 
